@@ -23,3 +23,8 @@ class Tile:
             return [True, False, False, True]
         elif self.type == TileType.THREE_WAY:
             return [True, True, False, True]
+
+    def turn_clock_wise(self):
+        a = 1 % len(self.open_sides)
+        self.open_sides = self.open_sides[-a:] + self.open_sides[:-a]
+

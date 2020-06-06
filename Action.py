@@ -3,7 +3,7 @@ class Action:
     def __init__(self, selected_side, selected_index, distance_moved, player):
         """
         :param selected_side: top, bottom, left or right
-        :param distance_moved:
+        :param distance_moved: how far the new tile has moved
         :param player:
         """
         self.selected_side = selected_side
