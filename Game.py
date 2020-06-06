@@ -9,7 +9,7 @@ from Action import Action
 from Player import Player
 import math
 
-FPS = 60
+FPS = 120
 
 
 class Game:
@@ -26,32 +26,28 @@ class Game:
         running = True
         while running:
 
-            #print(dt)
-
-            # for i in range(1000000):
-            #             #     a = math.sqrt(52352)
-            #             #     b = a*a
-
             for e in p.event.get():
                 if e.type == p.QUIT:
                     running = False
 
-            #if self.visuals_on:
-            self.visuals.draw_board(self.gamestate)
-            p.display.flip()
-            dt = self.clock.tick(FPS)
+            if self.visuals_on:
+                self.visuals.draw_screen(self.gamestate)
+                p.display.flip()
+                dt = self.clock.tick(FPS)
+                #print(p.mouse.get_pos())
+
 
             # if isinstance(self.gamestate.player_in_turn, Bot):
             #     self.gamestate.player_in_turn.do_turn()
 
-            self.gamestate.current_action.distance_moved += 2
+            #self.gamestate.current_action.distance_moved += dt / 40
 
 
 if __name__ == '__main__':
     board, tile_left = Generator.generate_random_full_board()
     p1 = Bot()
-    action = Action('left', 4, 15, p1)
-    gs = GameState(players=[p1], board=board, current_tile=tile_left, current_action=action)
+    #action = Action('top', 2, 0, p1)
+    gs = GameState(players=[p1], board=board, current_tile=tile_left, current_action=None)
     game = Game(gs)
     game.run()
 

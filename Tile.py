@@ -1,6 +1,8 @@
 from TileType import TileType
 from Objective import Objective
 
+import pygame as p
+
 
 class Tile:
 

@@ -7,7 +7,7 @@ import pygame as p
 import GameState
 from TileType import TileType
 
-from RoundedRect import RoundedRect
+from HelpFunctions import HelpFunctions
 
 import pyautogui, sys
 
@@ -39,10 +39,9 @@ CURRENT_TILE_TEXT_HEIGHT = None
 class Visuals:
     def __init__(self):
         p.init()
-        self.counter = 1
         self.screen = p.display.set_mode((WIDTH, HEIGHT))
         self.screen.fill(p.Color('Black'))
-        #p.draw.rect(self.screen, p.Color('Blue'), p.Rect(LEFT_MARGIN, TOP_MARGIN, 7 * TILE_SIZE, 7 * TILE_SIZE))
+
 
 
     def draw_current_tile_text(self):
@@ -50,19 +49,25 @@ class Visuals:
         self.text = font.render('Current tile', True, p.Color('white'))
         self.screen.blit(self.text, (LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN, TOP_MARGIN))
 
+    def draw_screen(self, gamestate):
+        self.screen.fill((0, 0, 0))
+        self.draw_board(gamestate)
+        self.draw_current_tile_text()
+        self.draw_current_tile(gamestate)
+        self.draw_tile_placeholders(gamestate)
+
+    def draw_turn_button(self):
+        button = p.draw.rect(self.screen, p.Color('grey'), LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN,
+                        TOP_MARGIN + self.text.get_height() + TILE_SIZE + 2*CURRENT_TILE_TEXT_BOTTOM_MARGIN,
+                        20, 40)
+        p.draw.rect(self.screen, p.Color('green'), 10, 10, 50, 50)
+        font = p.font.SysFont(None, 20)
+        text = font.render('Turn', 1, (0,0,0))
+        #self.screen.blit(text, button)
+
     def draw_board(self, gamestate):
-
-        self.counter += 1
-        if 10 < self.counter < 20:
-            self.draw_current_tile_text()
-            p.draw.rect(self.screen, p.Color('green'), p.Rect(100, 100, 200, 200))
-
-        colors = [p.Color("white"), p.Color("grey")]
-
         action = gamestate.current_action
-
         board = gamestate.board
-
 
         for r in range(7):
             for c in range(7):
@@ -83,11 +88,15 @@ class Visuals:
                         elif action.selected_side == 'right':
                             x_location -= action.distance_moved
                             x_location_current_tile -= action.distance_moved
+                    if action.selected_index == c:
+                        if action.selected_side == 'top':
+                            y_location += action.distance_moved
+                            y_location_current_tile += action.distance_moved
+                        elif action.selected_side == 'bottom':
+                            y_location -= action.distance_moved
+                            y_location_current_tile -= action.distance_moved
 
                 self.screen.blit(img, (x_location, y_location))
-
-        self.draw_current_tile(gamestate)
-        self.draw_tile_placeholders(gamestate)
 
     def draw_current_tile(self, gamestate):
         current_tile = gamestate.current_tile
@@ -95,8 +104,7 @@ class Visuals:
         img = p.transform.scale(img, (TILE_SIZE, TILE_SIZE))
         action = gamestate.current_action
         x = LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN
-        #y = TOP_MARGIN + self.text.get_height()  + CURRENT_TILE_TEXT_BOTTOM_MARGIN
-        y = TOP_MARGIN + 50 + CURRENT_TILE_TEXT_BOTTOM_MARGIN
+        y = TOP_MARGIN + self.text.get_height() + CURRENT_TILE_TEXT_BOTTOM_MARGIN
         # if action is None:
         # self.screen.blit(img, (LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN,
         # TOP_MARGIN + self.text.get_height() + CURRENT_TILE_TEXT_BOTTOM_MARGIN))
@@ -135,7 +143,19 @@ class Visuals:
             rects.append(rect_bottom)
 
         for rect in rects:
-            rounded_rect = RoundedRect.make_rounded_rect(self.screen, rect, p.Color('grey'), radius=0.4)
+            rounded_rect = HelpFunctions.make_rounded_rect(self.screen, rect, p.Color('grey'), radius=0.4)
+            if self.is_in_rect(p.mouse.get_pos(), rect):
+                cur_tile = gamestate.current_tile
+                img = p.image.load(cur_tile.image_file_url)
+                img = self.rotate_image(img, cur_tile.type, cur_tile.open_sides)
+                img = p.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+                img.set_alpha(200)
+                self.screen.blit(img, (rect[0], rect[1]))
+
+
+    @staticmethod
+    def is_in_rect(pos, rect):
+        return rect[0] <= pos[0] <= rect[0] + rect[3] and rect[1] <= pos[1] <= rect[1] + rect[3]
 
     @staticmethod
     def rotate_image(image, type, open_sides):

@@ -1,6 +1,6 @@
 from pygame import *
 
-class RoundedRect:
+class HelpFunctions:
 
     @staticmethod
     def make_rounded_rect(surface, rect, color, radius=0.4):
@@ -31,3 +31,4 @@ class RoundedRect:
         rectangle.fill((255, 255, 255, alpha), special_flags=BLEND_RGBA_MIN)
 
         return surface.blit(rectangle, pos)
+
