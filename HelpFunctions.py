@@ -1,4 +1,5 @@
 from pygame import *
+from Tile import Tile
 
 class HelpFunctions:
 
@@ -31,4 +32,12 @@ class HelpFunctions:
         rectangle.fill((255, 255, 255, alpha), special_flags=BLEND_RGBA_MIN)
 
         return surface.blit(rectangle, pos)
+
+    @staticmethod
+    def get_location_of_tile(board: [[Tile]], tile: Tile): # Returns row and column
+        for i, row in enumerate(board):
+            for j, t in enumerate(row):
+                if t == tile:
+                    return i,j
+
 

@@ -4,11 +4,13 @@ from PIL import Image, ImageTk
 import pygame as p
 import GameState
 from TileType import TileType
-from Action import Action
+from TileAction import TileAction
 
 from Button import Button
 
 from HelpFunctions import HelpFunctions
+
+
 
 LEFT_MARGIN = 100
 RIGHT_MARGIN = 200
@@ -16,6 +18,8 @@ TOP_MARGIN = 100
 BOTTOM_MARGIN = 100
 
 TILE_SIZE = 80
+
+PAWN_RADIUS = TILE_SIZE/4
 
 BOARD_WIDTH = BOARD_HEIGHT = 7 * TILE_SIZE
 
@@ -38,10 +42,7 @@ class Visuals:
         self.screen = p.display.set_mode((WIDTH, HEIGHT))
         self.screen.fill((0, 0, 0))
 
-    def draw_current_tile_text(self):
-        font = p.font.SysFont(None, 30)
-        self.text = font.render('Current tile', True, p.Color('white'))
-        self.screen.blit(self.text, (LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN, TOP_MARGIN))
+
 
     def draw_screen(self, gamestate):
         self.screen.fill((0, 0, 0))
@@ -50,6 +51,30 @@ class Visuals:
         self.draw_current_tile(gamestate)
         self.draw_tile_placeholders(gamestate)
         self.draw_turn_button(gamestate)
+        self.draw_current_player(gamestate)
+        self.draw_pawns(gamestate)
+
+    def draw_pawns(self, gamestate):
+        for player in gamestate.players:
+            tile = player.current_location
+            r, c = HelpFunctions.get_location_of_tile(gamestate.board, tile)
+            p.draw.circle(self.screen,
+                          player.color,
+                          (int((c + 0.5)*TILE_SIZE), int((r + 0.5)*TILE_SIZE)),
+                          PAWN_RADIUS)
+
+
+    def draw_current_player(self, gamestate):
+        name = gamestate.current_player.name
+        font = p.font.SysFont(None, 30)
+        self.text = font.render('Current player: ' + name, True, p.Color('white'))
+        self.screen.blit(self.text, (LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN,
+                                     TOP_MARGIN + self.text.get_height() + TILE_SIZE + 2 * CURRENT_TILE_TEXT_BOTTOM_MARGIN + 40 + CURRENT_TILE_TEXT_BOTTOM_MARGIN))
+
+    def draw_current_tile_text(self):
+        font = p.font.SysFont(None, 30)
+        self.text = font.render('Current tile', True, p.Color('white'))
+        self.screen.blit(self.text, (LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN, TOP_MARGIN))
 
     def draw_turn_button(self, gamestate):
 
@@ -63,7 +88,7 @@ class Visuals:
             gamestate.last_mouse_click_location = None
 
     def draw_board(self, gamestate):
-        action = gamestate.current_action
+        action = gamestate.current_tile_action
         board = gamestate.board
 
         for r in range(7):
@@ -99,7 +124,7 @@ class Visuals:
         current_tile = gamestate.current_tile
         img = p.image.load(current_tile.image_file_url)
         img = p.transform.scale(img, (TILE_SIZE, TILE_SIZE))
-        action = gamestate.current_action
+        action = gamestate.current_tile_action
         x = LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN
         y = TOP_MARGIN + self.text.get_height() + CURRENT_TILE_TEXT_BOTTOM_MARGIN
         if action is not None:
@@ -141,9 +166,9 @@ class Visuals:
                 self.draw_tile(cur_tile, (rect[0], rect[1]), 200)
             if gamestate.last_mouse_click_location is not None and self.is_in_rect(gamestate.last_mouse_click_location,
                                                                                    rect):
-                action = Action(selected_side=side, selected_index=index, distance_moved=0,
-                                player=gamestate.player_in_turn)
-                gamestate.current_action = action
+                action = TileAction(selected_side=side, selected_index=index,
+                                    player=gamestate.current_player)
+                gamestate.current_tile_action = action
                 gamestate.last_mouse_click_location = None
 
     def draw_tile(self, tile, location, alpha=255):

@@ -11,7 +11,6 @@ class Tile:
         self.type = tile_type
         self.objective = objective
         self.image_file_url = image_file_url
-        self.on_board = False
         self.starting_point_color = starting_point_color
         self.open_sides = self.initialize_open_sides()
 
