@@ -8,6 +8,8 @@ import random
 
 class Bot(Player):
     def do_turn(self, gamestate):
+        seed = 1
+        random.seed(seed)
         self.place_tile(gamestate)
         self.move_pawn(gamestate)
 

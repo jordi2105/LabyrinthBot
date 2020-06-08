@@ -13,7 +13,7 @@ from TileType import TileType
 from Phase import Phase
 
 FPS = 120
-TILE_SPEED = 8
+TILE_SPEED = 4
 
 
 class Game:
@@ -21,7 +21,8 @@ class Game:
         self.gamestate = gamestate
         self.end_of_turn = False
         self.visuals_on = visuals_on
-        self.visuals = Visuals()
+        if visuals_on:
+            self.visuals = Visuals()
         self.clock = p.time.Clock()
 
     def initialize(self):
@@ -39,47 +40,53 @@ class Game:
                         self.gamestate.last_mouse_click_location = p.mouse.get_pos()
 
             if isinstance(self.gamestate.current_player, Bot):
-                if self.gamestate.current_phase == Phase.TILE and self.gamestate.current_tile_action is None:
+                if self.gamestate.current_phase == Phase.CHOOSING_PAWN:
                     self.gamestate.current_player.place_tile(self.gamestate)
-                elif self.gamestate.current_phase == Phase.MOVE and self.gamestate.current_move_action is None:
+                elif self.gamestate.current_phase == Phase.CHOOSING_TILE:
                     self.gamestate.current_player.move_pawn(self.gamestate)
 
-            if self.gamestate.current_phase == Phase.TILE and self.gamestate.current_tile_action is not None:
+            if self.gamestate.current_phase == Phase.TILE_MOVING:
                 self.update_current_tile_action()
-            elif self.gamestate.current_phase == Phase.MOVE and self.gamestate.current_move_action is not None:
+            elif self.gamestate.current_phase == Phase.PAWN_MOVING:
                 self.update_current_move_action()
 
             if self.visuals_on:
                 self.visuals.draw_screen(self.gamestate)
                 p.display.flip()
 
-    def set_next_player(self):
+    def next_player(self):
         index = self.gamestate.players.index(self.gamestate.current_player)
         self.gamestate.current_player = self.gamestate.players[(index + 1) % len(self.gamestate.players)]
 
     def update_current_move_action(self):
         action = self.gamestate.current_move_action
-        action.next_tile(self.gamestate)
         if action.on_last_tile():
             self.next_phase()
+        else:
+            action.next_tile(self.gamestate)
 
     def update_current_tile_action(self):
         action = self.gamestate.current_tile_action
         # dt = int(self.clock.tick(FPS) / 100)
         # print(dt)
-        action.distance_moved += TILE_SPEED  # * dt
+        action.distance_moved += TILE_SPEED
         if action.distance_moved > self.visuals.get_tile_size():
+            action.distance_moved = self.visuals.get_tile_size()
             self.update_board()
             self.next_phase()
 
     def next_phase(self):
-        if self.gamestate.current_phase == Phase.TILE:
+        if self.gamestate.current_phase == Phase.CHOOSING_TILE:
+            self.gamestate.current_phase = Phase.TILE_MOVING
+        elif self.gamestate.current_phase == Phase.TILE_MOVING:
             self.gamestate.current_tile_action = None
-            self.gamestate.current_phase = Phase.MOVE
-        elif self.gamestate.current_phase == Phase.MOVE:
+            self.gamestate.current_phase = Phase.CHOOSING_PAWN
+        elif self.gamestate.current_phase == Phase.CHOOSING_PAWN:
+            self.gamestate.current_phase = Phase.PAWN_MOVING
+        elif self.gamestate.current_phase == Phase.PAWN_MOVING:
             self.gamestate.current_move_action = None
-            self.gamestate.current_phase = Phase.TILE
-            self.set_next_player()
+            self.gamestate.current_phase = Phase.CHOOSING_TILE
+            self.next_player()
 
     def update_board(self):
         action = self.gamestate.current_tile_action

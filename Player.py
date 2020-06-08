@@ -23,10 +23,16 @@ class Player(ABC):
                     self.possible_routes(gamestate, routes)
         return routes
 
-    def reachable_tiles(self, gamestate):
-        routes = self.possible_routes(gamestate, [[self.current_location]])
-        flat_list = [item for sublist in routes for item in sublist]
+    def reachable_tiles(self, gamestate, possible_routes=None):
+        if possible_routes is None:
+            possible_routes = self.possible_routes(gamestate, [[self.current_location]])
+        flat_list = [item for sublist in possible_routes for item in sublist]
         return set(flat_list)
+
+    def route_to_tile(self, tile, gamestate):
+        routes = self.possible_routes(gamestate, [[self.current_location]])
+        route = next((r for r in routes if r[-1] == tile), None)
+        return route
 
 
 

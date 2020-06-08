@@ -5,6 +5,7 @@ import pygame as p
 import GameState
 from TileType import TileType
 from TileAction import TileAction
+from MoveAction import MoveAction
 
 from Button import Button
 
@@ -54,17 +55,22 @@ class Visuals:
         self.draw_tile_placeholders(gamestate)
         self.draw_turn_button(gamestate)
         self.draw_current_player(gamestate)
-        self.draw_pawns(gamestate)
+        self.draw_current_pawns(gamestate)
 
-    def draw_pawns(self, gamestate):
+    def draw_current_pawns(self, gamestate):
         for player in gamestate.players:
             tile = player.current_location
-            r, c = HelpFunctions.get_location_of_tile(gamestate.board, tile)
-            x = LEFT_MARGIN + int((c + 0.5)*TILE_SIZE) - int(PAWN_RADIUS)
-            y = TOP_MARGIN + int((r + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
-            circle = p.Surface((PAWN_RADIUS * 2, PAWN_RADIUS * 2), p.SRCALPHA)
-            p.draw.circle(circle, player.color, (PAWN_RADIUS, PAWN_RADIUS), PAWN_RADIUS)
-            self.screen.blit(circle, (x, y))
+            self.draw_pawn(tile, player, gamestate)
+
+    def draw_pawn(self, tile, player, gamestate):
+        r, c = HelpFunctions.get_location_of_tile(gamestate.board, tile)
+        x = LEFT_MARGIN + int((c + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
+        y = TOP_MARGIN + int((r + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
+        circle = p.Surface((PAWN_RADIUS * 2, PAWN_RADIUS * 2), p.SRCALPHA)
+        p.draw.circle(circle, player.color, (PAWN_RADIUS, PAWN_RADIUS), PAWN_RADIUS)
+        self.screen.blit(circle, (x, y))
+
+
 
 
     def draw_current_player(self, gamestate):
@@ -73,6 +79,9 @@ class Visuals:
         self.text = font.render('Current player: ' + name, True, p.Color('white'))
         self.screen.blit(self.text, (LEFT_MARGIN + 7 * TILE_SIZE + CURRENT_TILE_CONTAINER_LEFT_MARGIN,
                                      TOP_MARGIN + self.text.get_height() + TILE_SIZE + 2 * CURRENT_TILE_TEXT_BOTTOM_MARGIN + 40 + CURRENT_TILE_TEXT_BOTTOM_MARGIN))
+
+
+
 
     def draw_current_tile_text(self):
         font = p.font.SysFont(None, 30)
@@ -97,9 +106,6 @@ class Visuals:
         for r in range(7):
             for c in range(7):
                 tile = board[r][c]
-                img = p.image.load(tile.image_file_url)
-                img = self.rotate_image(img, tile.type, tile.open_sides)
-                img = p.transform.scale(img, (TILE_SIZE, TILE_SIZE))
                 x_location = LEFT_MARGIN + c * TILE_SIZE
                 y_location = TOP_MARGIN + r * TILE_SIZE
 
@@ -166,10 +172,11 @@ class Visuals:
 
         for (rect, index, side) in rects:
             rounded_rect = HelpFunctions.make_rounded_rect(self.screen, rect, p.Color('grey'), radius=0.4)
-            if self.is_in_rect(p.mouse.get_pos(), rect):
+            phase = gamestate.current_phase
+            if phase == Phase.CHOOSING_TILE and self.is_in_rect(p.mouse.get_pos(), rect):
                 cur_tile = gamestate.current_tile
                 self.draw_tile(gamestate, cur_tile, (rect[0], rect[1]), 200)
-            if gamestate.last_mouse_click_location is not None and self.is_in_rect(gamestate.last_mouse_click_location,
+            if phase == Phase.CHOOSING_TILE and gamestate.last_mouse_click_location is not None and self.is_in_rect(gamestate.last_mouse_click_location,
                                                                                    rect):
                 action = TileAction(selected_side=side, selected_index=index,
                                     player=gamestate.current_player)
@@ -177,19 +184,22 @@ class Visuals:
                 gamestate.last_mouse_click_location = None
 
     def draw_tile(self, gamestate, tile, location, alpha=255):
-        img = p.image.load(tile.image_file_url)
-        img = self.rotate_image(img, tile.type, tile.open_sides)
-        img = p.transform.scale(img, (TILE_SIZE, TILE_SIZE))
-        img.set_alpha(alpha)
-        self.screen.blit(img, location)
+        rect = self.screen.blit(tile.image, location)
 
         # Marks a tile with the color of the player if it is reachable
         if tile.reachability_mark:
             p.draw.rect(self.screen, gamestate.previous_player().color, (location[0], location[1], TILE_SIZE, TILE_SIZE), 4)
 
-        # Makes it possible to hover over the tile and click on it
-        # if tile in gamestate.current_player.reachable_tiles(gamestate) and self.is_in_rect():
-        #     a = 1
+        # Makes it possible to hover over the tile and click on it)
+        player = gamestate.current_player
+        reachable_tiles = player.reachable_tiles(gamestate)
+        phase = gamestate.current_phase
+        if phase == Phase.CHOOSING_PAWN and tile in reachable_tiles and self.is_in_rect(p.mouse.get_pos(), rect):
+            self.draw_pawn(tile, player, gamestate)
+        if phase == Phase.CHOOSING_PAWN and tile in reachable_tiles and gamestate.last_mouse_click_location is not None and self.is_in_rect(gamestate.last_mouse_click_location, rect):
+            route = player.route_to_tile(tile, gamestate)
+            move_action = MoveAction(player, route)
+            gamestate.current_move_action = move_action
 
 
 
@@ -200,23 +210,3 @@ class Visuals:
     def is_in_rect(pos, rect):
         return rect[0] <= pos[0] <= rect[0] + rect[2] and rect[1] <= pos[1] <= rect[1] + rect[3]
 
-    @staticmethod
-    def rotate_image(image, type, open_sides):
-        if type == TileType.STRAIGHT:
-            if not open_sides[0]:
-                image = p.transform.rotate(image, 90)
-        elif type == TileType.CURVED:
-            if open_sides == [True, True, False, False]:
-                image = p.transform.rotate(image, 270)
-            elif open_sides == [False, True, True, False]:
-                image = p.transform.rotate(image, 180)
-            elif open_sides == [False, False, True, True]:
-                image = p.transform.rotate(image, 90)
-        elif type == TileType.THREE_WAY:
-            if not open_sides[3]:
-                image = p.transform.rotate(image, 270)
-            elif not open_sides[0]:
-                image = p.transform.rotate(image, 180)
-            elif not open_sides[1]:
-                image = p.transform.rotate(image, 90)
-        return image

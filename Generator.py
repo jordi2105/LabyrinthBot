@@ -117,7 +117,7 @@ class Generator(object):
 
     @staticmethod
     def generate_random_full_board() -> ([[Tile]], Tile):
-        seed = random.randint(0, 100000000)
+        seed = 3877926#random.randint(0, 100000000)
         print(seed)
         random.seed(seed)
 
@@ -129,7 +129,6 @@ class Generator(object):
                     tile = random.choice(tiles_left)
                     board[r][c] = tile
                     tiles_left.remove(tile)
-
         return board, tiles_left[0]
 
     @staticmethod
