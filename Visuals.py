@@ -8,6 +8,8 @@ from TileAction import TileAction
 
 from Button import Button
 
+from Phase import Phase
+
 from HelpFunctions import HelpFunctions
 
 
@@ -119,7 +121,7 @@ class Visuals:
                             y_location -= action.distance_moved
                             y_location_current_tile -= action.distance_moved
 
-                self.draw_tile(tile, (x_location, y_location))
+                self.draw_tile(gamestate, tile, (x_location, y_location))
 
     def draw_current_tile(self, gamestate):
         current_tile = gamestate.current_tile
@@ -142,7 +144,7 @@ class Visuals:
                 x = LEFT_MARGIN + BOARD_WIDTH - action.distance_moved
                 y = TOP_MARGIN + action.selected_index * TILE_SIZE
 
-        self.draw_tile(current_tile, (x, y), 255)
+        self.draw_tile(gamestate, current_tile, (x, y), 255)
 
 
 
@@ -166,7 +168,7 @@ class Visuals:
             rounded_rect = HelpFunctions.make_rounded_rect(self.screen, rect, p.Color('grey'), radius=0.4)
             if self.is_in_rect(p.mouse.get_pos(), rect):
                 cur_tile = gamestate.current_tile
-                self.draw_tile(cur_tile, (rect[0], rect[1]), 200)
+                self.draw_tile(gamestate, cur_tile, (rect[0], rect[1]), 200)
             if gamestate.last_mouse_click_location is not None and self.is_in_rect(gamestate.last_mouse_click_location,
                                                                                    rect):
                 action = TileAction(selected_side=side, selected_index=index,
@@ -174,15 +176,22 @@ class Visuals:
                 gamestate.current_tile_action = action
                 gamestate.last_mouse_click_location = None
 
-    def draw_tile(self, tile, location, alpha=255):
+    def draw_tile(self, gamestate, tile, location, alpha=255):
         img = p.image.load(tile.image_file_url)
         img = self.rotate_image(img, tile.type, tile.open_sides)
         img = p.transform.scale(img, (TILE_SIZE, TILE_SIZE))
         img.set_alpha(alpha)
         self.screen.blit(img, location)
 
+        # Marks a tile with the color of the player if it is reachable
         if tile.reachability_mark:
-            p.draw.rect(self.screen, (255, 0, 0), (location[0], location[1], TILE_SIZE, TILE_SIZE), 4)
+            p.draw.rect(self.screen, gamestate.previous_player().color, (location[0], location[1], TILE_SIZE, TILE_SIZE), 4)
+
+        # Makes it possible to hover over the tile and click on it
+        # if tile in gamestate.current_player.reachable_tiles(gamestate) and self.is_in_rect():
+        #     a = 1
+
+
 
     def get_tile_size(self):
         return TILE_SIZE

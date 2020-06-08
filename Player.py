@@ -12,14 +12,33 @@ class Player(ABC):
         self.current_location = current_location
         self.color = color
 
-    def reachable_tiles(self, gamestate, tile, reachable_tiles):
-        reachable_neighbors = tile.reachable_neighbors(gamestate)
-        for neighbor in reachable_neighbors:
-            if neighbor not in reachable_tiles:
-                reachable_tiles.append(neighbor)
-                self.reachable_tiles(gamestate, neighbor, reachable_tiles)
+    def possible_routes(self, gamestate, routes):
+        for route in routes:
+            reachable_neighbors = route[-1].reachable_neighbors(gamestate)
+            for neighbor in reachable_neighbors:
+                if neighbor not in [r[-1] for r in routes]:
+                    new_route = route.copy()
+                    new_route.append(neighbor)
+                    routes.append(new_route)
+                    self.possible_routes(gamestate, routes)
+        return routes
 
-        return reachable_tiles
+    def reachable_tiles(self, gamestate):
+        routes = self.possible_routes(gamestate, [[self.current_location]])
+        flat_list = [item for sublist in routes for item in sublist]
+        return set(flat_list)
+
+
+
+
+        #
+        # reachable_neighbors = tile.reachable_neighbors(gamestate)
+        # for neighbor in reachable_neighbors:
+        #     if neighbor not in reachable_tiles:
+        #         reachable_tiles.append(neighbor)
+        #         self.reachable_tiles(gamestate, neighbor, reachable_tiles)
+        #
+        # return routes
 
         #
         # for tile in reachable_tiles:

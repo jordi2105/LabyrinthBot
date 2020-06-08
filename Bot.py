@@ -1,5 +1,9 @@
 from Player import Player
 from TileAction import TileAction
+from MoveAction import MoveAction
+from Phase import Phase
+
+import random
 
 
 class Bot(Player):
@@ -12,16 +16,9 @@ class Bot(Player):
         gamestate.current_tile_action = action
 
     def move_pawn(self, gamestate):
-        reachable_neighbors = self.reachable_tiles(gamestate, self.current_location, [])
-        for t in reachable_neighbors:
-            t.reachability_mark = True
-        a = 1
-       # self.current_location = new_location
-
-
-
-
-
-
-
-
+        routes = self.possible_routes(gamestate, [[self.current_location]])
+        for r in routes:
+            r[-1].reachability_mark = True
+        random_route = random.choice(routes)
+        move_action = MoveAction(self, random_route)
+        gamestate.current_move_action = move_action

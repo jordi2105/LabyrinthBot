@@ -1,6 +1,7 @@
 from Objective import Objective
 from Tile import Tile
 from TileType import TileType
+from HelpFunctions import HelpFunctions
 
 import random
 
@@ -116,7 +117,7 @@ class Generator(object):
 
     @staticmethod
     def generate_random_full_board() -> ([[Tile]], Tile):
-        seed = 91129805 #random.randint(0, 100000000)
+        seed = random.randint(0, 100000000)
         print(seed)
         random.seed(seed)
 
@@ -130,6 +131,21 @@ class Generator(object):
                     tiles_left.remove(tile)
 
         return board, tiles_left[0]
+
+    @staticmethod
+    def place_tiles_on_board(board: [[Tile]], tiles: Tile, location: (int, int)):
+
+        for i, tile in enumerate(tiles):
+            tile_old_location = HelpFunctions.get_location_of_tile(board, tile)
+            r_old = tile_old_location[0]
+            c_old = tile_old_location[1]
+            r = location[i][0]
+            c = location[i][1]
+            old_tile = board[r][c]
+            board[r][c] = tile
+
+            board[r_old][c_old] = old_tile
+
 
 
 

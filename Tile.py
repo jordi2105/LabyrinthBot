@@ -16,6 +16,7 @@ class Tile:
         self.open_sides = self.initialize_open_sides()
         self.reachability_mark = False
 
+ 
     def initialize_open_sides(self):
         # open_sides: top, right, bottom, left
         if self.type == TileType.STRAIGHT:
