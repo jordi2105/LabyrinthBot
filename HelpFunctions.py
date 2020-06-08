@@ -1,5 +1,5 @@
 from pygame import *
-from Tile import Tile
+import Tile
 
 class HelpFunctions:
 

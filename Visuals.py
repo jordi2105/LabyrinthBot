@@ -19,7 +19,7 @@ BOTTOM_MARGIN = 100
 
 TILE_SIZE = 80
 
-PAWN_RADIUS = TILE_SIZE/4
+PAWN_RADIUS = int(TILE_SIZE/4)
 
 BOARD_WIDTH = BOARD_HEIGHT = 7 * TILE_SIZE
 
@@ -58,10 +58,11 @@ class Visuals:
         for player in gamestate.players:
             tile = player.current_location
             r, c = HelpFunctions.get_location_of_tile(gamestate.board, tile)
-            p.draw.circle(self.screen,
-                          player.color,
-                          (int((c + 0.5)*TILE_SIZE), int((r + 0.5)*TILE_SIZE)),
-                          PAWN_RADIUS)
+            x = LEFT_MARGIN + int((c + 0.5)*TILE_SIZE) - int(PAWN_RADIUS)
+            y = TOP_MARGIN + int((r + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
+            circle = p.Surface((PAWN_RADIUS * 2, PAWN_RADIUS * 2), p.SRCALPHA)
+            p.draw.circle(circle, player.color, (PAWN_RADIUS, PAWN_RADIUS), PAWN_RADIUS)
+            self.screen.blit(circle, (x, y))
 
 
     def draw_current_player(self, gamestate):
@@ -118,7 +119,7 @@ class Visuals:
                             y_location -= action.distance_moved
                             y_location_current_tile -= action.distance_moved
 
-                self.screen.blit(img, (x_location, y_location))
+                self.draw_tile(tile, (x_location, y_location))
 
     def draw_current_tile(self, gamestate):
         current_tile = gamestate.current_tile
@@ -142,6 +143,8 @@ class Visuals:
                 y = TOP_MARGIN + action.selected_index * TILE_SIZE
 
         self.draw_tile(current_tile, (x, y), 255)
+
+
 
     def draw_tile_placeholders(self, gamestate):
         rects = []
@@ -177,6 +180,9 @@ class Visuals:
         img = p.transform.scale(img, (TILE_SIZE, TILE_SIZE))
         img.set_alpha(alpha)
         self.screen.blit(img, location)
+
+        if tile.reachability_mark:
+            p.draw.rect(self.screen, (255, 0, 0), (location[0], location[1], TILE_SIZE, TILE_SIZE), 4)
 
     def get_tile_size(self):
         return TILE_SIZE

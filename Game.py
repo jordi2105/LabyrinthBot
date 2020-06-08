@@ -99,9 +99,9 @@ if __name__ == '__main__':
     all_tiles = [item for sublist in board for item in sublist]
     red_tile = next((t for t in all_tiles if t.starting_point_color == 'RED'), None)
     blue_tile = next((t for t in all_tiles if t.starting_point_color == 'BLUE'), None)
-    bot = Bot(name='Bot', current_location=red_tile, color='RED')
-    human = Human(name='Human', current_location=blue_tile, color='BLUE')
-    players = [human, bot]
+    bot = Bot(name='Bot', current_location=red_tile, color=p.Color(255, 0, 0, 150))
+    human = Human(name='Human', current_location=blue_tile, color=p.Color(0, 0, 255, 150))
+    players = [bot, human]
     gs = GameState(players=players, board=board, current_tile=tile_left, current_player=players[0])
     game = Game(gs)
     game.run()
