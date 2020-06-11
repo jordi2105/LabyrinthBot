@@ -2,6 +2,8 @@ from Objective import Objective
 from Tile import Tile
 from TileType import TileType
 from HelpFunctions import HelpFunctions
+from Card import Card
+from Player import Player
 
 import random
 
@@ -77,31 +79,31 @@ class Generator(object):
         tiles = Generator.generate_tiles()
 
         board[0][0] = next(t for t in tiles if t.starting_point_color == 'RED')
-        board[0][0].open_sides = [False, True, True, False]
+        board[0][0].turn_clock_wise(2)
         board[0][6] = next(t for t in tiles if t.starting_point_color == 'YELLOW')
-        board[0][6].open_sides = [False, False, True, True]
+        board[0][6].turn_clock_wise(3)
         board[6][0] = next(t for t in tiles if t.starting_point_color == 'GREEN')
-        board[6][0].open_sides = [True, True, False, False]
+        board[6][0].turn_clock_wise(1)
         board[6][6] = next(t for t in tiles if t.starting_point_color == 'BLUE')
 
         board[0][2] = next(t for t in tiles if t.objective == Objective.BOOK)
         board[0][4] = next(t for t in tiles if t.objective == Objective.BAG_OF_GOLD_COINS)
 
         board[2][0] = next(t for t in tiles if t.objective == Objective.TREASURE_MAP)
-        board[2][0].open_sides = [True, True, True, False]
+        board[2][0].turn_clock_wise(1)
         board[2][2] = next(t for t in tiles if t.objective == Objective.GOLD_CROWN)
         board[2][4] = next(t for t in tiles if t.objective == Objective.SET_OF_KEYS)
-        board[2][4].open_sides = [False, True, True, True]
+        board[2][4].turn_clock_wise(2)
         board[2][6] = next(t for t in tiles if t.objective == Objective.SKULL)
-        board[2][6].open_sides = [True, False, True, True]
+        board[2][6].turn_clock_wise(3)
 
         board[4][0] = next(t for t in tiles if t.objective == Objective.GOLD_RING)
-        board[4][0].open_sides = [True, True, True, False]
+        board[4][0].turn_clock_wise(1)
         board[4][2] = next(t for t in tiles if t.objective == Objective.TREASURE_CHEST)
         board[4][4] = next(t for t in tiles if t.objective == Objective.JEWEL)
-        board[4][4].open_sides = [True, False, True, True]
+        board[4][4].turn_clock_wise(3)
         board[4][6] = next(t for t in tiles if t.objective == Objective.SWORD)
-        board[4][6].open_sides = [True, False, True, True]
+        board[4][6].turn_clock_wise(3)
 
         board[6][2] = next(t for t in tiles if t.objective == Objective.GOLD_MENORAH)
         board[6][4] = next(t for t in tiles if t.objective == Objective.HELMET)
@@ -144,6 +146,33 @@ class Generator(object):
             board[r][c] = tile
 
             board[r_old][c_old] = old_tile
+
+    @staticmethod
+    def deal_cards(players: [Player], nr_of_cards_pp=None):
+        images_directory = 'card_images/'
+        cards = []
+        for obj in Objective:
+            if 'STARTING_POINT' not in obj.name:
+                file_name_url = images_directory + obj.name + '.jpg'
+                card = Card(obj, file_name_url)
+                cards.append(card)
+
+        random.shuffle(cards)
+        n = len(cards)
+        if nr_of_cards_pp is None:
+            nr_of_cards_pp = int(n/len(players))
+
+        for i in range(0, len(players)):
+            first_card_i = i*nr_of_cards_pp
+            last_card_i = first_card_i + nr_of_cards_pp
+            p_cards = cards[first_card_i:last_card_i]
+            players[i].deal_cards(p_cards)
+
+
+
+
+
+
 
 
 

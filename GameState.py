@@ -15,6 +15,7 @@ class GameState:
         self._current_phase = current_phase
         if current_phase is None:
             self._current_phase = Phase.CHOOSING_TILE
+        self.player_won = None
 
     def previous_player(self):
         index = self.players.index(self.current_player)
@@ -26,7 +27,6 @@ class GameState:
 
     @current_tile_action.setter
     def current_tile_action(self, current_tile_action):
-        print('Setting current tile action')
         self._current_tile_action = current_tile_action
         if current_tile_action is not None:
             self.current_phase = Phase.TILE_MOVING
@@ -39,7 +39,6 @@ class GameState:
 
     @current_move_action.setter
     def current_move_action(self, current_move_action):
-        print('Setting current move action')
         self._current_move_action = current_move_action
         if current_move_action is not None:
             self.current_phase = Phase.PAWN_MOVING
@@ -52,6 +51,5 @@ class GameState:
 
     @current_phase.setter
     def current_phase(self, current_phase):
-        print('Setting current phase')
         self._current_phase = current_phase
 

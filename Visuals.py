@@ -6,6 +6,7 @@ import GameState
 from TileType import TileType
 from TileAction import TileAction
 from MoveAction import MoveAction
+from Human import Human
 
 from Button import Button
 
@@ -31,7 +32,12 @@ CURRENT_TILE_CONTAINER_WIDTH = 100
 CURRENT_TILE_TEXT_BOTTOM_MARGIN = 10
 CURRENT_TILE_CONTAINER_X = LEFT_MARGIN + BOARD_WIDTH + CURRENT_TILE_CONTAINER_LEFT_MARGIN
 
+RIGHT_CONTAINER_MARGIN = CURRENT_TILE_CONTAINER_LEFT_MARGIN
+RIGHT_CONTAINER_X = LEFT_MARGIN + BOARD_WIDTH + RIGHT_CONTAINER_MARGIN
+
 PLACEHOLDERS_MARGIN = 10
+
+MARGIN = 30
 
 WIDTH = LEFT_MARGIN + 7 * TILE_SIZE + RIGHT_MARGIN + CURRENT_TILE_CONTAINER_LEFT_MARGIN + CURRENT_TILE_CONTAINER_WIDTH
 HEIGHT = TOP_MARGIN + 7 * TILE_SIZE + BOTTOM_MARGIN
@@ -47,6 +53,7 @@ class Visuals:
 
 
 
+
     def draw_screen(self, gamestate):
         self.screen.fill((0, 0, 0))
         self.draw_board(gamestate)
@@ -56,6 +63,40 @@ class Visuals:
         self.draw_turn_button(gamestate)
         self.draw_current_player(gamestate)
         self.draw_current_pawns(gamestate)
+        self.draw_current_card(gamestate)
+        self.draw_player_has_won(gamestate)
+
+    def draw_player_has_won(self, gamestate):
+        player = gamestate.player_won
+        if player is not None:
+            font = p.font.SysFont(None, 80)
+            text = font.render(player.name + ' has won!', True, p.Color('red'))
+            x = LEFT_MARGIN + 100
+            y = TOP_MARGIN + 100
+            self.screen.blit(text, (x, y))
+
+    def draw_current_card(self, gamestate):
+        player = gamestate.current_player
+        y = TOP_MARGIN + 200
+        font = p.font.SysFont(None, 30)
+        self.text = font.render('Current card: ', True, p.Color('white'))
+        self.screen.blit(self.text, (RIGHT_CONTAINER_X, y))
+
+        if player.going_back_to_starting_point():
+            text = font.render('Go back to your starting point!', True, p.Color('red'))
+            x = RIGHT_CONTAINER_X
+            y = y + MARGIN
+            self.screen.blit(text, (x, y))
+
+        elif isinstance(player, Human):
+            card = player.current_card
+            x = RIGHT_CONTAINER_X
+            y = y + MARGIN
+
+            self.screen.blit(card.image, (x, y))
+
+
+
 
     def draw_current_pawns(self, gamestate):
         for player in gamestate.players:
@@ -66,6 +107,9 @@ class Visuals:
         r, c = HelpFunctions.get_location_of_tile(gamestate.board, tile)
         x = LEFT_MARGIN + int((c + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
         y = TOP_MARGIN + int((r + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
+
+        x, y = self.get_new_position_by_tile_action(gamestate.current_tile_action, x, y, r, c)
+
         circle = p.Surface((PAWN_RADIUS * 2, PAWN_RADIUS * 2), p.SRCALPHA)
         p.draw.circle(circle, player.color, (PAWN_RADIUS, PAWN_RADIUS), PAWN_RADIUS)
         self.screen.blit(circle, (x, y))
@@ -96,7 +140,7 @@ class Visuals:
         rect = button.draw(self.screen)
         if gamestate.last_mouse_click_location is not None and self.is_in_rect(gamestate.last_mouse_click_location,
                                                                                rect):
-            gamestate.current_tile.turn_clock_wise()
+            gamestate.current_tile.turn_clock_wise(1)
             gamestate.last_mouse_click_location = None
 
     def draw_board(self, gamestate):
@@ -106,28 +150,27 @@ class Visuals:
         for r in range(7):
             for c in range(7):
                 tile = board[r][c]
-                x_location = LEFT_MARGIN + c * TILE_SIZE
-                y_location = TOP_MARGIN + r * TILE_SIZE
+                x = LEFT_MARGIN + c * TILE_SIZE
+                y = TOP_MARGIN + r * TILE_SIZE
 
-                if action is not None:
-                    x_location_current_tile = 0
-                    y_location_current_tile = 0
-                    if action.selected_index == r:
-                        if action.selected_side == 'left':
-                            x_location += action.distance_moved
-                            x_location_current_tile += action.distance_moved
-                        elif action.selected_side == 'right':
-                            x_location -= action.distance_moved
-                            x_location_current_tile -= action.distance_moved
-                    if action.selected_index == c:
-                        if action.selected_side == 'top':
-                            y_location += action.distance_moved
-                            y_location_current_tile += action.distance_moved
-                        elif action.selected_side == 'bottom':
-                            y_location -= action.distance_moved
-                            y_location_current_tile -= action.distance_moved
+                x, y = self.get_new_position_by_tile_action(action, x, y, r ,c)
 
-                self.draw_tile(gamestate, tile, (x_location, y_location))
+                self.draw_tile(gamestate, tile, (x, y))
+
+    @staticmethod
+    def get_new_position_by_tile_action(action, x, y, r, c) -> (int, int):
+        if action is not None:
+            if action.selected_index == r:
+                if action.selected_side == 'left':
+                    x += action.distance_moved
+                elif action.selected_side == 'right':
+                    x -= action.distance_moved
+            if action.selected_index == c:
+                if action.selected_side == 'top':
+                    y += action.distance_moved
+                elif action.selected_side == 'bottom':
+                    y -= action.distance_moved
+        return x, y
 
     def draw_current_tile(self, gamestate):
         current_tile = gamestate.current_tile

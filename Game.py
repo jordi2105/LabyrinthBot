@@ -11,6 +11,8 @@ from Player import Player
 import math
 from TileType import TileType
 from Phase import Phase
+from Objective import Objective
+from Card import Card
 
 FPS = 120
 TILE_SPEED = 4
@@ -19,7 +21,6 @@ TILE_SPEED = 4
 class Game:
     def __init__(self, gamestate: GameState, visuals_on=True):
         self.gamestate = gamestate
-        self.end_of_turn = False
         self.visuals_on = visuals_on
         if visuals_on:
             self.visuals = Visuals()
@@ -60,8 +61,14 @@ class Game:
 
     def update_current_move_action(self):
         action = self.gamestate.current_move_action
+        player = self.gamestate.current_player
         if action.on_last_tile():
             self.next_phase()
+            if player.is_located_at_current_objective():
+                player.next_card()
+            elif player.going_back_to_starting_point() and player.is_on_starting_point():
+                self.gamestate.player_won = player
+
         else:
             action.next_tile(self.gamestate)
 
@@ -110,6 +117,15 @@ class Game:
 
         self.gamestate.current_tile = new_current_tile
 
+        # If the player is pushed off the board
+        player = self.gamestate.current_player
+        if player.current_location == self.gamestate.current_tile:
+            if side in ['left', 'top']:
+                player.current_location = new_tiles[0]
+            elif side in ['right', 'bottom']:
+                player.current_location = new_tiles[-1]
+
+
     def shift_tiles(self, tiles, n):
         new_tile = self.gamestate.current_tile
         if n > 0:
@@ -128,10 +144,18 @@ if __name__ == '__main__':
     blue_tile = next((t for t in all_tiles if t.starting_point_color == 'BLUE'), None)
     bot = Bot(name='Bot', current_location=red_tile, color=p.Color(255, 0, 0, 150))
     human = Human(name='Human', current_location=blue_tile, color=p.Color(0, 0, 255, 150))
+    #bot.cards = [Card(Objective.JEWEL, 'card_images/JEWEL.jpg')]
+    #bot.current_card = bot.cards[0]
+    #human.cards = [Card(Objective.BAT, 'card_images/BAT.jpg')]
+    #human.current_card = human.cards[0]
     players = [human, bot]
+    Generator.deal_cards(players=players, nr_of_cards_pp=1)
     gs = GameState(players=players, board=board, current_tile=tile_left, current_player=players[0])
     game = Game(gs)
     game.run()
+
+
+
 
 
 def test_stuff(all_tiles, board):
@@ -159,4 +183,4 @@ def test_stuff(all_tiles, board):
     Generator.place_tiles_on_board(board, [tile1, tile2, tile3, tile4, tile5, tile6],
                                    [(0, 1), (0, 3), (1, 0), (1, 1), (1, 2), (1, 3)])
 
-# def initialize_board():
+
