@@ -17,6 +17,21 @@ class GameState:
             self._current_phase = Phase.CHOOSING_TILE
         self.player_won = None
 
+        self.re_calculate_state_variables()
+
+    def re_calculate_state_variables(self):
+
+        # Setting the row and column variable for each tile
+        for i, row in enumerate(self.board):
+            for j, t in enumerate(row):
+                t.row = i
+                t.column = j
+
+        # Setting the reachability tiles for each player
+        for p in self.players:
+            p.re_calculate_reachable_tiles(self)
+
+
     def previous_player(self):
         index = self.players.index(self.current_player)
         return self.players[(index + len(self.players) - 1) % len(self.players)]
@@ -52,4 +67,5 @@ class GameState:
     @current_phase.setter
     def current_phase(self, current_phase):
         self._current_phase = current_phase
+
 

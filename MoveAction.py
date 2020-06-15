@@ -1,4 +1,4 @@
-from Player import Player
+from Players.Player import Player
 from Tile import Tile
 
 
@@ -19,3 +19,6 @@ class MoveAction:
 
     def on_last_tile(self):
         return self.current_tile == self.route[-1]
+
+    def __str__(self):
+        return self.player.name + " is moving to tile " + self.route[-1].image_file_url

@@ -16,6 +16,8 @@ class Tile:
         self.starting_point_color = starting_point_color
         self._open_sides = self.initialize_open_sides()
         self.reachability_mark = False
+        self.row = None
+        self.column = None
 
         image = p.image.load(image_file_url)
         self.image = p.transform.scale(image, (80, 80))
@@ -40,7 +42,8 @@ class Tile:
 
     def reachable_neighbors(self, gamestate):
         board = gamestate.board
-        r, c = HelpFunctions.get_location_of_tile(board, self)
+        r = self.row
+        c = self.column
         reachable_neighbors = []
         if r > 0:
             neighbor = board[r - 1][c]
@@ -64,6 +67,12 @@ class Tile:
     @property
     def open_sides(self):
         return self._open_sides
+
+    def __str__(self):
+        return self.name()
+
+    def name(self):
+        return self.image_file_url.replace('tile_images/', '')
 
 
 

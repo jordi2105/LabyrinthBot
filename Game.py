@@ -4,15 +4,11 @@ from Generator import Generator
 import Visuals
 from GameState import GameState
 from Visuals import Visuals
-from Bot import Bot
-from Human import Human
-from TileAction import TileAction
-from Player import Player
-import math
+from Players.RandomBot import RandomBot
+from Players.Human import Human
 from TileType import TileType
 from Phase import Phase
-from Objective import Objective
-from Card import Card
+import random
 
 FPS = 120
 TILE_SPEED = 4
@@ -33,6 +29,8 @@ class Game:
         running = True
         while running:
 
+            self.gamestate.re_calculate_state_variables()
+
             for e in p.event.get():
                 if e.type == p.QUIT:
                     running = False
@@ -40,11 +38,11 @@ class Game:
                     if e.type == p.MOUSEBUTTONDOWN:
                         self.gamestate.last_mouse_click_location = p.mouse.get_pos()
 
-            if isinstance(self.gamestate.current_player, Bot):
+            if isinstance(self.gamestate.current_player, RandomBot):
                 if self.gamestate.current_phase == Phase.CHOOSING_PAWN:
-                    self.gamestate.current_player.place_tile(self.gamestate)
-                elif self.gamestate.current_phase == Phase.CHOOSING_TILE:
                     self.gamestate.current_player.move_pawn(self.gamestate)
+                elif self.gamestate.current_phase == Phase.CHOOSING_TILE:
+                    self.gamestate.current_player.place_tile(self.gamestate)
 
             if self.gamestate.current_phase == Phase.TILE_MOVING:
                 self.update_current_tile_action()
@@ -83,6 +81,7 @@ class Game:
             self.next_phase()
 
     def next_phase(self):
+        self.gamestate.re_calculate_state_variables()
         if self.gamestate.current_phase == Phase.CHOOSING_TILE:
             self.gamestate.current_phase = Phase.TILE_MOVING
         elif self.gamestate.current_phase == Phase.TILE_MOVING:
@@ -117,13 +116,13 @@ class Game:
 
         self.gamestate.current_tile = new_current_tile
 
-        # If the player is pushed off the board
-        player = self.gamestate.current_player
-        if player.current_location == self.gamestate.current_tile:
-            if side in ['left', 'top']:
-                player.current_location = new_tiles[0]
-            elif side in ['right', 'bottom']:
-                player.current_location = new_tiles[-1]
+        # Check if a player is pushed off the board
+        for player in self.gamestate.players:
+            if player.current_location == self.gamestate.current_tile:
+                if side in ['left', 'top']:
+                    player.current_location = new_tiles[0]
+                elif side in ['right', 'bottom']:
+                    player.current_location = new_tiles[-1]
 
 
     def shift_tiles(self, tiles, n):
@@ -138,12 +137,14 @@ class Game:
 
 
 if __name__ == '__main__':
-    board, tile_left = Generator.generate_random_full_board()
+    seed = random.random()
+    print(seed)
+    board, tile_left = Generator.generate_random_full_board(seed)
     all_tiles = [item for sublist in board for item in sublist]
     red_tile = next((t for t in all_tiles if t.starting_point_color == 'RED'), None)
     blue_tile = next((t for t in all_tiles if t.starting_point_color == 'BLUE'), None)
-    bot = Bot(name='Bot', current_location=red_tile, color=p.Color(255, 0, 0, 150))
-    human = Human(name='Human', current_location=blue_tile, color=p.Color(0, 0, 255, 150))
+    bot = RandomBot(name='Bot', current_location=red_tile, color=p.Color(255, 0, 0, 150), seed=seed)
+    human = Human(name='Human', current_location=blue_tile, color=p.Color(0, 0, 255, 150), seed=seed)
     #bot.cards = [Card(Objective.JEWEL, 'card_images/JEWEL.jpg')]
     #bot.current_card = bot.cards[0]
     #human.cards = [Card(Objective.BAT, 'card_images/BAT.jpg')]
@@ -153,9 +154,6 @@ if __name__ == '__main__':
     gs = GameState(players=players, board=board, current_tile=tile_left, current_player=players[0])
     game = Game(gs)
     game.run()
-
-
-
 
 
 def test_stuff(all_tiles, board):

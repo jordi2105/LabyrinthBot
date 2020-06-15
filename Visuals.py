@@ -1,12 +1,7 @@
-from Board import Board
-import os
-from PIL import Image, ImageTk
 import pygame as p
-import GameState
-from TileType import TileType
 from TileAction import TileAction
 from MoveAction import MoveAction
-from Human import Human
+from Players.Human import Human
 
 from Button import Button
 
@@ -95,16 +90,15 @@ class Visuals:
 
             self.screen.blit(card.image, (x, y))
 
-
-
-
     def draw_current_pawns(self, gamestate):
         for player in gamestate.players:
             tile = player.current_location
             self.draw_pawn(tile, player, gamestate)
 
     def draw_pawn(self, tile, player, gamestate):
-        r, c = HelpFunctions.get_location_of_tile(gamestate.board, tile)
+        r = tile.row
+        c = tile.column
+
         x = LEFT_MARGIN + int((c + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
         y = TOP_MARGIN + int((r + 0.5) * TILE_SIZE) - int(PAWN_RADIUS)
 
@@ -113,7 +107,6 @@ class Visuals:
         circle = p.Surface((PAWN_RADIUS * 2, PAWN_RADIUS * 2), p.SRCALPHA)
         p.draw.circle(circle, player.color, (PAWN_RADIUS, PAWN_RADIUS), PAWN_RADIUS)
         self.screen.blit(circle, (x, y))
-
 
 
 
@@ -235,7 +228,7 @@ class Visuals:
 
         # Makes it possible to hover over the tile and click on it)
         player = gamestate.current_player
-        reachable_tiles = player.reachable_tiles(gamestate)
+        reachable_tiles = player.reachable_tiles
         phase = gamestate.current_phase
         if phase == Phase.CHOOSING_PAWN and tile in reachable_tiles and self.is_in_rect(p.mouse.get_pos(), rect):
             self.draw_pawn(tile, player, gamestate)

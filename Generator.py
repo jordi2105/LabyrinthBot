@@ -3,7 +3,7 @@ from Tile import Tile
 from TileType import TileType
 from HelpFunctions import HelpFunctions
 from Card import Card
-from Player import Player
+from Players.Player import Player
 
 import random
 
@@ -118,8 +118,7 @@ class Generator(object):
         return board, tiles #Tiles left
 
     @staticmethod
-    def generate_random_full_board() -> ([[Tile]], Tile):
-        seed = 3877926#random.randint(0, 100000000)
+    def generate_random_full_board(seed) -> ([[Tile]], Tile):
         print(seed)
         random.seed(seed)
 
