@@ -44,8 +44,6 @@ class Player(ABC):
     def deal_cards(self, cards: [Card]):
         self.cards = cards
         self.current_card = cards[0]
-        print(self.name + ' has cards:')
-        print([c.objective for c in self.cards])
 
     def is_located_at_current_objective(self):
         return self.current_card is not None and self.current_location.objective == self.current_card.objective

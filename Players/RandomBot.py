@@ -21,9 +21,8 @@ class RandomBot(Bot):
     def move_pawn(self, gamestate):
         routes = self.possible_routes(gamestate, [[self.current_location]])
         urls = [r[-1].image_file_url for r in routes]
-        print("Tiles Reachable for " + self.name + ": " + ", ".join(urls))
         random_route = random.choice(routes)
-        print(str(routes.index(random_route)))
         move_action = MoveAction(self, random_route)
-        print(move_action)
         gamestate.current_move_action = move_action
+
+
