@@ -13,8 +13,6 @@ class GameState:
         self.last_mouse_click_location = last_mouse_click_location
         self._current_move_action = current_move_action
         self._current_phase = current_phase
-        if current_phase is None:
-            self._current_phase = Phase.CHOOSING_TILE
         self.player_won = None
 
         self.re_calculate_state_variables()
@@ -36,8 +34,6 @@ class GameState:
             #     for t in p.reachable_tiles:
             #         t.reachability_mark = True
 
-
-
     def previous_player(self):
         index = self.players.index(self.current_player)
         return self.players[(index + len(self.players) - 1) % len(self.players)]
@@ -49,10 +45,8 @@ class GameState:
     @current_tile_action.setter
     def current_tile_action(self, current_tile_action):
         self._current_tile_action = current_tile_action
-        if current_tile_action is not None:
-            self.current_phase = Phase.TILE_MOVING
-        else:
-            self.current_phase = Phase.CHOOSING_PAWN
+        if self._current_tile_action is not None:
+            self.next_phase()
 
     @property
     def current_move_action(self):
@@ -61,10 +55,8 @@ class GameState:
     @current_move_action.setter
     def current_move_action(self, current_move_action):
         self._current_move_action = current_move_action
-        if current_move_action is not None:
-            self.current_phase = Phase.PAWN_MOVING
-        else:
-            self.current_phase = Phase.CHOOSING_TILE
+        if self._current_move_action is not None:
+            self.next_phase()
 
     @property
     def current_phase(self):
@@ -73,5 +65,23 @@ class GameState:
     @current_phase.setter
     def current_phase(self, current_phase):
         self._current_phase = current_phase
+
+    def next_phase(self):
+        self.re_calculate_state_variables()
+        if self.current_phase == Phase.CHOOSING_TILE:
+            self.current_phase = Phase.TILE_MOVING
+        elif self.current_phase == Phase.TILE_MOVING:
+            self.current_tile_action = None
+            self.current_phase = Phase.CHOOSING_PAWN
+        elif self.current_phase == Phase.CHOOSING_PAWN:
+            self.current_phase = Phase.PAWN_MOVING
+        elif self.current_phase == Phase.PAWN_MOVING:
+            self.current_move_action = None
+            self.current_phase = Phase.CHOOSING_TILE
+            self.next_player()
+
+    def next_player(self):
+        index = self.players.index(self.current_player)
+        self.current_player = self.players[(index + 1) % len(self.players)]
 
 
