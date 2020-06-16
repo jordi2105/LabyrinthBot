@@ -4,7 +4,7 @@ from Phase import Phase
 
 class GameState:
     def __init__(self, players, board=None, current_tile=None, current_player=None, current_tile_action=None,
-                 last_mouse_click_location=None, current_move_action=None, current_phase=None):
+                 last_mouse_click_location=None, current_move_action=None, current_phase=Phase.CHOOSING_TILE):
         self.board = board  # 2d array of Tiles [rows][columns]
         self.current_tile = current_tile
         self.players = players
@@ -26,10 +26,16 @@ class GameState:
             for j, t in enumerate(row):
                 t.row = i
                 t.column = j
+                #t.reachability_mark = False
 
         # Setting the reachability tiles for each player
         for p in self.players:
             p.re_calculate_reachable_tiles(self)
+
+            # if self.current_player == p:
+            #     for t in p.reachable_tiles:
+            #         t.reachability_mark = True
+
 
 
     def previous_player(self):

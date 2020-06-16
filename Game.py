@@ -15,15 +15,16 @@ from Objective import Objective
 import random
 
 FPS = 120
-TILE_SPEED = 30
 
 TILE_SIZE = 80
 
 
 class Game:
-    def __init__(self, gamestate: GameState, visuals_on=True):
+    def __init__(self, gamestate: GameState, tile_speed, move_speed, visuals_on=True):
         self.gamestate = gamestate
         self.visuals_on = visuals_on
+        self.tile_speed = tile_speed
+        self.move_speed = move_speed
         if visuals_on:
             self.visuals = Visuals()
         self.clock = p.time.Clock()
@@ -34,8 +35,6 @@ class Game:
     def run(self):
         running = True
         while not self.gamestate.player_won and running:
-
-            self.gamestate.re_calculate_state_variables()
 
             if self.visuals_on:
                 for e in p.event.get():
@@ -60,7 +59,6 @@ class Game:
                 self.visuals.draw_screen(self.gamestate)
                 p.display.flip()
 
-        print('The winner: ' + self.gamestate.player_won.name)
 
     def next_player(self):
         index = self.gamestate.players.index(self.gamestate.current_player)
@@ -69,21 +67,21 @@ class Game:
     def update_current_move_action(self):
         action = self.gamestate.current_move_action
         player = self.gamestate.current_player
+        dt = int(self.clock.tick(FPS))
+        print(dt)
         if action.on_last_tile():
             self.next_phase()
             if player.is_located_at_current_objective():
                 player.next_card()
             elif player.going_back_to_starting_point() and player.is_on_starting_point():
                 self.gamestate.player_won = player
-
         else:
             action.next_tile(self.gamestate)
 
     def update_current_tile_action(self):
         action = self.gamestate.current_tile_action
-        # dt = int(self.clock.tick(FPS) / 100)
-        # print(dt)
-        action.distance_moved += TILE_SPEED
+
+        action.distance_moved += self.tile_speed
         if action.distance_moved > TILE_SIZE:
             action.distance_moved = TILE_SIZE
             self.update_board()
@@ -142,35 +140,6 @@ class Game:
             new_current_tile = tiles[0]
             tiles = tiles[-n:] + [new_tile]
         return tiles, new_current_tile
-
-
-if __name__ == '__main__':
-    seed = random.random()
-    print(seed)
-    board, tile_left = Generator.generate_random_full_board(seed)
-    all_tiles = [item for sublist in board for item in sublist]
-    red_tile = next((t for t in all_tiles if t.starting_point_color == 'RED'), None)
-    blue_tile = next((t for t in all_tiles if t.starting_point_color == 'BLUE'), None)
-
-    first_bot = FirstBot(name='FirstBot', current_location=red_tile, color=p.Color(255, 0, 0, 150), seed=seed)
-    random_bot = RandomBot(name='RandomBot', current_location=blue_tile, color=p.Color(0, 0, 255, 150), seed=seed)
-    # human = Human(name='Human', current_location=blue_tile, color=p.Color(0, 0, 255, 150), seed=seed)
-
-    # first_bot.cards = [Card(Objective.BAT, 'card_images/BAT.jpg')]
-    # first_bot.current_card = first_bot.cards[0]
-    # random_bot.cards = [Card(Objective.GOLD_RING, 'card_images/GOLD_RING.jpg')]
-    # random_bot.current_card = random_bot.cards[0]
-    # bot.cards = [Card(Objective.BOOK, 'card_images/BOOK.jpg')]
-    # bot.current_card = bot.cards[0]
-    # human.cards = [Card(Objective.BAT, 'card_images/BAT.jpg')]
-    # human.current_card = human.cards[0]
-
-    players = [first_bot, random_bot]
-
-    Generator.deal_cards(players=players, nr_of_cards_pp=1)
-    gs = GameState(players=players, board=board, current_tile=tile_left, current_player=players[0])
-    game = Game(gs, visuals_on=False)
-    game.run()
 
 
 def test_stuff(all_tiles, board):

@@ -238,10 +238,6 @@ class Visuals:
             gamestate.current_move_action = move_action
 
 
-
-    def get_tile_size(self):
-        return TILE_SIZE
-
     @staticmethod
     def is_in_rect(pos, rect):
         return rect[0] <= pos[0] <= rect[0] + rect[2] and rect[1] <= pos[1] <= rect[1] + rect[3]

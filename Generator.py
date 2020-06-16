@@ -119,9 +119,7 @@ class Generator(object):
 
     @staticmethod
     def generate_random_full_board(seed) -> ([[Tile]], Tile):
-        print(seed)
         random.seed(seed)
-
         board, tiles_left = Generator.generate_default_board()
 
         for r in range(7):
