@@ -59,16 +59,11 @@ class Game:
                 self.visuals.draw_screen(self.gamestate)
                 p.display.flip()
 
-
-    # def next_player(self):
-    #     index = self.gamestate.players.index(self.gamestate.current_player)
-    #     self.gamestate.current_player = self.gamestate.players[(index + 1) % len(self.gamestate.players)]
-
     def update_current_move_action(self):
         action = self.gamestate.current_move_action
         player = self.gamestate.current_player
-        dt = int(self.clock.tick(FPS))
-        print(dt)
+        # dt = int(self.clock.tick(FPS))
+        # print(dt)
         if action.on_last_tile():
             self.gamestate.next_phase()
             if player.is_located_at_current_objective():
@@ -86,20 +81,6 @@ class Game:
             action.distance_moved = TILE_SIZE
             self.update_board()
             self.gamestate.next_phase()
-
-    # def next_phase(self):
-    #     self.gamestate.re_calculate_state_variables()
-    #     if self.gamestate.current_phase == Phase.CHOOSING_TILE:
-    #         self.gamestate.current_phase = Phase.TILE_MOVING
-    #     elif self.gamestate.current_phase == Phase.TILE_MOVING:
-    #         self.gamestate.current_tile_action = None
-    #         self.gamestate.current_phase = Phase.CHOOSING_PAWN
-    #     elif self.gamestate.current_phase == Phase.CHOOSING_PAWN:
-    #         self.gamestate.current_phase = Phase.PAWN_MOVING
-    #     elif self.gamestate.current_phase == Phase.PAWN_MOVING:
-    #         self.gamestate.current_move_action = None
-    #         self.gamestate.current_phase = Phase.CHOOSING_TILE
-    #         self.next_player()
 
     def update_board(self):
         action = self.gamestate.current_tile_action

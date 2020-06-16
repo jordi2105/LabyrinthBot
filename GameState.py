@@ -67,7 +67,6 @@ class GameState:
         self._current_phase = current_phase
 
     def next_phase(self):
-        self.re_calculate_state_variables()
         if self.current_phase == Phase.CHOOSING_TILE:
             self.current_phase = Phase.TILE_MOVING
         elif self.current_phase == Phase.TILE_MOVING:
@@ -79,6 +78,8 @@ class GameState:
             self.current_move_action = None
             self.current_phase = Phase.CHOOSING_TILE
             self.next_player()
+
+        self.re_calculate_state_variables()
 
     def next_player(self):
         index = self.players.index(self.current_player)
