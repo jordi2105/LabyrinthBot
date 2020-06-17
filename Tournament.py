@@ -20,7 +20,7 @@ import random
 
 class Tournament:
 
-    def __init__(self, nr_of_runs, logging_on, visuals_on, players, seed, tile_speed=4, move_speed=4):
+    def __init__(self, nr_of_runs, logging_on, visuals_on, players, tile_speed=4, move_speed=4):
         self.nr_of_runs = nr_of_runs
         self.logging_on = logging_on
         self.visuals_on = visuals_on
@@ -28,14 +28,16 @@ class Tournament:
         self.move_speed = move_speed
         self.players = players
         self.winners = []
-        self.seed = seed
 
     def run(self):
         for r in range(self.nr_of_runs):
+            seed = random.randint(0, 10000000)
+            print('seed: ' + str(seed))
             board, tile_left = Generator.generate_random_full_board(seed)
             all_tiles = [item for sublist in board for item in sublist]
             red_tile = next((t for t in all_tiles if t.starting_point_color == 'RED'), None)
             blue_tile = next((t for t in all_tiles if t.starting_point_color == 'BLUE'), None)
+            green_tile = next((t for t in all_tiles if t.starting_point_color == 'GREEN'), None)
             players = []
             for name in self.players:
                 if self.players[name] == 'FirstBot':
@@ -46,6 +48,10 @@ class Tournament:
                     random_bot = RandomBot(name=name, current_location=blue_tile, color=p.Color(0, 0, 255, 150),
                                            seed=seed)
                     players.append(random_bot)
+                elif self.players[name] == 'Human':
+                    human = Human(name=name, current_location=green_tile, color=p.Color(0, 255, 0, 150),
+                                  seed=seed)
+                    players.append(human)
                 else:
                     raise ValueError('Player has no valid type')
             Generator.deal_cards(players=players, nr_of_cards_pp=1)
@@ -62,10 +68,9 @@ class Tournament:
 
 
 if __name__ == '__main__':
-    players = {'random': 'RandomBot', 'first': 'FirstBot'}
-    seed = random.random()
-    print(seed)
-    tournament = Tournament(nr_of_runs=100, logging_on=True, visuals_on=True, players=players, seed=seed, tile_speed=19,
+    players = {'random1': 'RandomBot', 'first1': 'FirstBot'}
+
+    tournament = Tournament(nr_of_runs=100, logging_on=True, visuals_on=False, players=players, tile_speed=10,
                             move_speed=1)
     tournament.run()
     winners = tournament.winners

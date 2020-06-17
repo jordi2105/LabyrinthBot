@@ -12,6 +12,7 @@ from TileType import TileType
 from Phase import Phase
 from Card import Card
 from Objective import Objective
+from HelpFunctions import HelpFunctions
 import random
 
 FPS = 120
@@ -79,71 +80,46 @@ class Game:
         action.distance_moved += self.tile_speed
         if action.distance_moved > TILE_SIZE:
             action.distance_moved = TILE_SIZE
-            self.update_board()
+            HelpFunctions.apply_tile_action(gamestate=self.gamestate)
             self.gamestate.next_phase()
 
-    def update_board(self):
-        action = self.gamestate.current_tile_action
-        side = action.selected_side
-        index = action.selected_index
+    # def update_board(self):
+    #     action = self.gamestate.current_tile_action
+    #     side = action.selected_side
+    #     index = action.selected_index
+    #
+    #     if side == 'left':
+    #         new_tiles, new_current_tile = self.shift_tiles(self.gamestate.board[index], 1)
+    #         self.gamestate.board[index] = new_tiles
+    #     elif side == 'right':
+    #         new_tiles, new_current_tile = self.shift_tiles(self.gamestate.board[index], -1)
+    #         self.gamestate.board[index] = new_tiles
+    #     elif side in ['top', 'bottom']:
+    #         if side == 'top':
+    #             n = 1
+    #         elif side == 'bottom':
+    #             n = -1
+    #         new_tiles, new_current_tile = self.shift_tiles([r[index] for r in self.gamestate.board], n)
+    #         for i, row in enumerate(self.gamestate.board):
+    #             self.gamestate.board[i][index] = new_tiles[i]
+    #
+    #     self.gamestate.current_tile = new_current_tile
+    #
+    #     # Check if a player is pushed off the board
+    #     for player in self.gamestate.players:
+    #         if player.current_location == self.gamestate.current_tile:
+    #             if side in ['left', 'top']:
+    #                 player.current_location = new_tiles[0]
+    #             elif side in ['right', 'bottom']:
+    #                 player.current_location = new_tiles[-1]
+    #
+    # def shift_tiles(self, tiles, n):
+    #     new_tile = self.gamestate.current_tile
+    #     if n > 0:
+    #         new_current_tile = tiles[-1]
+    #         tiles = [new_tile] + tiles[:-n]
+    #     elif n < 0:
+    #         new_current_tile = tiles[0]
+    #         tiles = tiles[-n:] + [new_tile]
+    #     return tiles, new_current_tile
 
-        if side == 'left':
-            new_tiles, new_current_tile = self.shift_tiles(self.gamestate.board[index], 1)
-            self.gamestate.board[index] = new_tiles
-        elif side == 'right':
-            new_tiles, new_current_tile = self.shift_tiles(self.gamestate.board[index], -1)
-            self.gamestate.board[index] = new_tiles
-        elif side in ['top', 'bottom']:
-            if side == 'top':
-                n = 1
-            elif side == 'bottom':
-                n = -1
-            new_tiles, new_current_tile = self.shift_tiles([r[index] for r in self.gamestate.board], n)
-            for i, row in enumerate(self.gamestate.board):
-                self.gamestate.board[i][index] = new_tiles[i]
-
-        self.gamestate.current_tile = new_current_tile
-
-        # Check if a player is pushed off the board
-        for player in self.gamestate.players:
-            if player.current_location == self.gamestate.current_tile:
-                if side in ['left', 'top']:
-                    player.current_location = new_tiles[0]
-                elif side in ['right', 'bottom']:
-                    player.current_location = new_tiles[-1]
-
-    def shift_tiles(self, tiles, n):
-        new_tile = self.gamestate.current_tile
-        if n > 0:
-            new_current_tile = tiles[-1]
-            tiles = [new_tile] + tiles[:-n]
-        elif n < 0:
-            new_current_tile = tiles[0]
-            tiles = tiles[-n:] + [new_tile]
-        return tiles, new_current_tile
-
-
-def test_stuff(all_tiles, board):
-    curved_tiles = [t for t in all_tiles if t.type == TileType.CURVED and t.starting_point_color is None]
-    three_way_tiles = [t for t in all_tiles if t.type == TileType.THREE_WAY]
-    straight_tiles = [t for t in all_tiles if t.type == TileType.STRAIGHT]
-    tile1 = curved_tiles[0]
-    tile2 = curved_tiles[1]
-    tile3 = curved_tiles[2]
-    tile4 = three_way_tiles[0]
-    tile5 = straight_tiles[0]
-    tile6 = curved_tiles[3]
-
-    tile1.turn_clock_wise()
-    tile1.turn_clock_wise()
-
-    tile2.turn_clock_wise()
-    tile2.turn_clock_wise()
-    tile2.turn_clock_wise()
-
-    tile3.turn_clock_wise()
-
-    tile5.turn_clock_wise()
-
-    Generator.place_tiles_on_board(board, [tile1, tile2, tile3, tile4, tile5, tile6],
-                                   [(0, 1), (0, 3), (1, 0), (1, 1), (1, 2), (1, 3)])

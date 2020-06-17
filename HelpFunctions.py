@@ -1,6 +1,7 @@
 import pygame as p
 import Tile
 from Objective import Objective
+from GameState import GameState
 
 class HelpFunctions:
 
@@ -44,6 +45,53 @@ class HelpFunctions:
             return 'GREEN'
         elif color.b == 255:
             return 'BLUE'
+
+    # @staticmethod
+    # def simulate_next_state(state: GameState, rotate_current_tile: int, side: str, index: int, ):
+
+
+
+    @staticmethod
+    def apply_tile_action(gamestate: GameState):
+        action = gamestate.current_tile_action
+        side = action.selected_side
+        index = action.selected_index
+
+        if side == 'left':
+            new_tiles, new_current_tile = HelpFunctions.shift_tiles(gamestate, gamestate.board[index], 1)
+            gamestate.board[index] = new_tiles
+        elif side == 'right':
+            new_tiles, new_current_tile = HelpFunctions.shift_tiles(gamestate, gamestate.board[index], -1)
+            gamestate.board[index] = new_tiles
+        elif side in ['top', 'bottom']:
+            if side == 'top':
+                n = 1
+            elif side == 'bottom':
+                n = -1
+            new_tiles, new_current_tile = HelpFunctions.shift_tiles(gamestate, [r[index] for r in gamestate.board], n)
+            for i, row in enumerate(gamestate.board):
+                gamestate.board[i][index] = new_tiles[i]
+
+        gamestate.current_tile = new_current_tile
+
+        # Check if a player is pushed off the board
+        for player in gamestate.players:
+            if player.current_location == gamestate.current_tile:
+                if side in ['left', 'top']:
+                    player.current_location = new_tiles[0]
+                elif side in ['right', 'bottom']:
+                    player.current_location = new_tiles[-1]
+
+    @staticmethod
+    def shift_tiles(gamestate, tiles, n):
+        new_tile = gamestate.current_tile
+        if n > 0:
+            new_current_tile = tiles[-1]
+            tiles = [new_tile] + tiles[:-n]
+        elif n < 0:
+            new_current_tile = tiles[0]
+            tiles = tiles[-n:] + [new_tile]
+        return tiles, new_current_tile
 
 
 

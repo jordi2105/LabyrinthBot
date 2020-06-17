@@ -9,7 +9,7 @@ import random
 class RandomBot(Bot):
 
     def determine_side_and_index_and_rotation(self, gamestate) -> (str, int):
-        self.turn_tile_randomly(gamestate)
+        #self.turn_tile_randomly(gamestate)
         index = random.choice([1, 3, 5])
         side = random.choice(['top', 'bottom', 'left', 'right'])
         return side, index

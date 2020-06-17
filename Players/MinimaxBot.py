@@ -6,6 +6,7 @@ from GameState import GameState
 
 import random
 import sys
+import copy
 
 
 # This bot only works with two players
@@ -45,8 +46,21 @@ class MinimaxBot(Bot):
     def fitness(self, state: GameState):
         # Here I must give a fitness value to a state
 
+        fitness = 0
+
         player = next(p for p in state.players if p.name == self.name)
-        pass
+        other_player = next(p for p in state.players if p.name != self.name)
+        fitness -= len(player.cards)
+        fitness += len(other_player.cards)
+        return fitness
 
     def get_children_of_state(self, state):
-        pass
+        children = []
+        for row in [1, 3, 5]:
+            for column in [1, 3, 5]:
+                for rotate_n in range(4):
+                    child = copy(state)
+                    child.current_tile.turn_clock_wise(rotate_n)
+
+
+
