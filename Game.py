@@ -22,6 +22,7 @@ TILE_SIZE = 80
 
 class Game:
     def __init__(self, gamestate: GameState, tile_speed, move_speed, visuals_on=True):
+        #self.image_file_to_image = {}
         self.gamestate = gamestate
         self.visuals_on = visuals_on
         self.tile_speed = tile_speed
@@ -29,14 +30,21 @@ class Game:
         if visuals_on:
             self.visuals = Visuals()
         self.clock = p.time.Clock()
+        #self.initialize_image_dictionary()
 
-    def initialize(self):
-        pass
+    # def initialize_image_dictionary(self):
+    #     images_directory = 'tile_images/'
+    #     for obj in Objective:
+    #         file_name = images_directory + obj.name + '.jpg'
+    #         image = p.image.load(file_name)
+    #         self.image = p.transform.scale(image, (80, 80))
+    #         self.image_file_to_image[file_name] = self.image
 
     def run(self):
         running = True
+        iteration = 0
         while not self.gamestate.player_won and running:
-
+            #print(iteration)
             if self.visuals_on:
                 for e in p.event.get():
                     if e.type == p.QUIT:
@@ -59,6 +67,9 @@ class Game:
             if self.visuals_on:
                 self.visuals.draw_screen(self.gamestate)
                 p.display.flip()
+
+            iteration += 1
+
 
     def update_current_move_action(self):
         action = self.gamestate.current_move_action

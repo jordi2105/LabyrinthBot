@@ -8,19 +8,16 @@ import random
 
 class RandomBot(Bot):
 
-    def determine_side_and_index_and_rotation(self, gamestate) -> (str, int):
-        #self.turn_tile_randomly(gamestate)
+    def determine_side_and_index_and_rotation(self, gamestate) -> (str, int, int):
+        rotation_n = random.randint(0, 3)
         index = random.choice([1, 3, 5])
         side = random.choice(['top', 'bottom', 'left', 'right'])
-        return side, index
-
-    def turn_tile_randomly(self, gamestate):
-        n = random.randint(0, 3)
-        gamestate.current_tile.turn_clock_wise(n)
-
+        return side, index, rotation_n
 
     def determine_route(self, gamestate):
-        routes = self.possible_routes(gamestate, [[self.current_location]])
+        routes = self.possible_routes(gamestate=gamestate,
+                                      tile=self.current_location,
+                                      routes=[[self.current_location]])
         random_route = random.choice(routes)
         return random_route
 

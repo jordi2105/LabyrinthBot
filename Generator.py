@@ -145,8 +145,18 @@ class Generator(object):
             board[r_old][c_old] = old_tile
 
     @staticmethod
-    def deal_cards(players: [Player], nr_of_cards_pp=None):
+    def deal_cards(players: [Player], nr_of_cards_pp=None, predefined_objectives=None):
         images_directory = 'card_images/'
+        if predefined_objectives:
+            for i, objectives in enumerate(predefined_objectives):
+                cards = []
+                for objective in objectives:
+                    file_name_url = images_directory + objective.name + '.jpg'
+                    card = Card(objective, file_name_url)
+                    cards.append(card)
+                players[i].deal_cards(cards)
+            return
+
         cards = []
         for obj in Objective:
             if 'STARTING_POINT' not in obj.name:
@@ -164,6 +174,18 @@ class Generator(object):
             last_card_i = first_card_i + nr_of_cards_pp
             p_cards = cards[first_card_i:last_card_i]
             players[i].deal_cards(p_cards)
+
+
+    # Adjustments: a list of (row, column, url, nr of rotations)
+    @staticmethod
+    def adjust_board(gamestate, adjustments: [(int, int, str, int)]):
+        board = gamestate.board
+        for (row, column, url, rotation_n) in adjustments:
+            tile = HelpFunctions.get_tile_by_url(board, url)
+            tile.turn_clock_wise(rotation_n)
+            old_tile = board[row][column]
+            board[row][column] = tile
+            board[tile.row][tile.column] = old_tile
 
 
 

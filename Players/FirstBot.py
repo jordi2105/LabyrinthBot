@@ -12,7 +12,7 @@ import random
 class FirstBot(RandomBot):
 
     def determine_route(self, gamestate):
-        routes = self.possible_routes(gamestate, [[self.current_location]])
+        routes = self.possible_routes(gamestate, self.current_location, [[self.current_location]])
         all_tiles = [item for sublist in gamestate.board for item in sublist]
         if self.going_back_to_starting_point():
             color_str = HelpFunctions.color_to_str(self.color)

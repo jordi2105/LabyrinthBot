@@ -8,17 +8,14 @@ import random
 
 class Bot(Player):
 
-    def do_turn(self, gamestate, seed):
-        self.place_tile(gamestate)
-        self.move_pawn(gamestate)
-
     def place_tile(self, gamestate):
-        side, index = self.determine_side_and_index_and_rotation(gamestate)
+        side, index, rotation_n = self.determine_side_and_index_and_rotation(gamestate)
+        gamestate.current_tile.turn_clock_wise(rotation_n)
         action = TileAction(selected_side=side, selected_index=index, player=gamestate.current_player)
         gamestate.current_tile_action = action
 
     @abstractmethod
-    def determine_side_and_index_and_rotation(self, gamestate) -> (str, int):
+    def determine_side_and_index_and_rotation(self, gamestate) -> (str, int, int):
         pass
 
     def move_pawn(self, gamestate):

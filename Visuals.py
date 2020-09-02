@@ -2,6 +2,7 @@ import pygame as p
 from TileAction import TileAction
 from MoveAction import MoveAction
 from Players.Human import Human
+from Players.Bot import Bot
 
 from Button import Button
 
@@ -83,7 +84,7 @@ class Visuals:
             y = y + MARGIN
             self.screen.blit(text, (x, y))
 
-        elif isinstance(player, Human):
+        elif isinstance(player, Human) or isinstance(player, Bot):
             card = player.current_card
             x = RIGHT_CONTAINER_X
             y = y + MARGIN

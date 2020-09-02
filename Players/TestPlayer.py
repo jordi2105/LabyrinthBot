@@ -1,23 +1,16 @@
 from Card import Card
 from Objective import Objective
 from abc import ABC, abstractmethod
-import Tile
-
-import pygame as p
 
 import random
 
-import copy
 
-
-class Player(ABC):
+class TestPlayer(ABC):
 
     current_location: object
 
-    def __init__(self, name=None, current_location: Tile=None, color: p.Color=None, seed=None):
+    def __init__(self, name, seed):
         self.name = name
-        self.current_location = current_location
-        self.color = color
         self.cards = None
         self.current_card = None
         self.reachable_tiles = []
@@ -28,7 +21,7 @@ class Player(ABC):
 
     def update_reachable_tiles(self, gamestate, possible_routes=None):
         if possible_routes is None:
-            possible_routes = self.possible_routes(gamestate, self.current_location, [[self.current_location]])
+            possible_routes = self.possible_routes(gamestate, None, [[self.current_location]])
         flat_list = [item for sublist in possible_routes for item in sublist]
         self.reachable_tiles = set(flat_list)
 
@@ -56,7 +49,7 @@ class Player(ABC):
         return routes
 
     def route_to_tile(self, tile, gamestate):
-        routes = self.possible_routes(gamestate=gamestate, tile=self.current_location, routes=[[self.current_location]])
+        routes = self.possible_routes(gamestate=gamestate, tile=None, routes=[[None]])
         route = next((r for r in routes if r[-1] == tile), None)
         return route
 
@@ -65,7 +58,7 @@ class Player(ABC):
         self.current_card = cards[0]
 
     def is_located_at_current_objective(self):
-        return self.current_card is not None and self.current_location.objective == self.current_card.objective
+        return self.current_card is not None and None.objective == self.current_card.objective
 
     def next_card(self):
         new_index = self.cards.index(self.current_card) + 1
@@ -74,31 +67,16 @@ class Player(ABC):
         else:
             self.current_card = None
 
-    def nr_of_cards_left(self) -> int:
-        if self.current_card is None:
-            return 0
-        index = self.cards.index(self.current_card)
-        nr_left = len(self.cards) - index
-        return nr_left
-
     def going_back_to_starting_point(self) -> bool:
         return self.current_card is None
 
-    def is_on_starting_point(self):
-        if self.current_location.starting_point_color == 'YELLOW':
-            return self.color.r == 255 and self.color.g == 255
-        elif self.current_location.starting_point_color == 'RED':
-            return self.color.r == 255
-        elif self.current_location.starting_point_color == 'BLUE':
-            return self.color.b == 255
-        elif self.current_location.starting_point_color == 'GREEN':
-            return self.color.g == 255
+    # def is_on_starting_point(self):
+    #     if self.current_location.starting_point_color == 'YELLOW':
+    #         return self.color.r == 255 and self.color.g == 255
+    #     elif self.current_location.starting_point_color == 'RED':
+    #         return self.color.r == 255
+    #     elif self.current_location.starting_point_color == 'BLUE':
+    #         return self.color.b == 255
+    #     elif self.current_location.starting_point_color == 'GREEN':
+    #         return self.color.g == 255
 
-    def copy(self):
-        copy_obj = Player()
-        for name, attr in self.__dict__.items():
-            if hasattr(attr, 'copy') and callable(getattr(attr, 'copy')):
-                copy_obj.__dict__[name] = attr.copy()
-            else:
-                copy_obj.__dict__[name] = copy.deepcopy(attr)
-        return copy_obj
